@@ -45,7 +45,8 @@ namespace PasswordCrackerMaster
         {
             Socket socket = _serverSocket.EndAccept(AR);
             _clientSocket.Add(socket);
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCall, socket);
+            Send(socket);
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecieveMessage, socket);
         }
 
         public static void SplitList()
@@ -58,7 +59,7 @@ namespace PasswordCrackerMaster
             }
         }
 
-        private static List<List<string>> MakeList(string[] words, int size)
+        public static List<List<string>> MakeList(string[] words, int size)
         {
             int startIndex = 0;
             List<List<string>> result = new List<List<string>>();
@@ -78,7 +79,7 @@ namespace PasswordCrackerMaster
             return result;
         }
 
-        private static void Send()
+        private static void Send(Socket client)
         {
             try
             {
@@ -86,14 +87,85 @@ namespace PasswordCrackerMaster
                 {
                     string fileName = "webster-dictionary.txt";
                     List<string> message = stack.Pop();
-                    
+                    if (File.Exists(fileName))
+                    {
+                        File.Delete(fileName);
+                    }
+                    if (!File.Exists(fileName))
+                    {
+                        File.Create(fileName);
+                    }
+                    foreach (string words in message)
+                    {
+                        try
+                        {
+                            using (var file = new StreamWriter("webster-dictionary.txt", true))
+                            {
+                                file.Write(words + "\n");
+                            }
+                            File.WriteAllText(fileName, words);
+                            Console.ReadLine();
+                        }
+                        catch (IOException)
+                        {
+                            Console.WriteLine("Klart nok");
+                            
+                        }
+                    }
+                    string fileSend = fileName;
+                    var msg = Encoding.UTF8.GetBytes(fileSend);
+                    byte[] byteMsg = msg;
+                    client.BeginSend(byteMsg, 0, byteMsg.Length, SocketFlags.None, SendMessage, client);
+                    _serverSocket.BeginAccept(RecievedCall, null);
+                    client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecieveMessage, client);
 
                 }
             }
-            catch (Exception)
+            catch (SocketException)
             {
+
+                Console.WriteLine("Error");
                 
-                throw;
+            }
+        }
+
+        private static void SendMessage(IAsyncResult ar)
+        {
+            try
+            {
+                Socket socket = (Socket) ar.AsyncState;
+                socket.EndSend(ar);
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine("Error2");
+            }
+        }
+
+        private static void RecieveMessage(IAsyncResult ar)
+        {
+            try
+            {
+                Socket socket = (Socket) ar.AsyncState;
+                int recieved = socket.EndReceive(ar);
+                byte[] dataBuf = new byte[recieved];
+                Array.Copy(_buffer, dataBuf, recieved);
+                string text = Encoding.ASCII.GetString(dataBuf);
+                Console.WriteLine("Passwords Recieved: " + "\n" + text);
+                if (text.Contains(text))
+                {
+                    Send(socket);
+                }
+                else
+                {
+                    Console.WriteLine("No more passwords");
+                }
+            }
+            catch (SocketException)
+            {
+
+                Console.WriteLine("Client is offline");
+                
             }
         }
     }
