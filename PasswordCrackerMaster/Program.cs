@@ -14,6 +14,7 @@ namespace PasswordCrackerMaster
         private static IPAddress ip = IPAddress.Parse("localhost");
         private static Stack<List<string>> stack = new Stack<List<string>>();
         private static byte[] _buffer = new byte[1024];
+        public static List<List<string>> splitList = new List<List<string>>();
         private static List<Socket> _clientSocket = new List<Socket>();  
         private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static void Main(string[] args)
@@ -47,7 +48,7 @@ namespace PasswordCrackerMaster
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCall, socket);
         }
 
-        private static void SplitList()
+        public static void SplitList()
         {
             string[] words = File.ReadAllLines("webster-dictionary.txt");
             List<List<string>> makeList = MakeList(words, 5000);
@@ -55,6 +56,26 @@ namespace PasswordCrackerMaster
             {
                 stack.Push(list);
             }
+        }
+
+        private static List<List<string>> MakeList(string[] words, int size)
+        {
+            int startIndex = 0;
+            List<List<string>> result = new List<List<string>>();
+            List<string> wordList = words.ToList();
+            while (true)
+            {
+                if (wordList.Count - startIndex < size)
+                {
+                    List<string> smallList = wordList.GetRange(startIndex, wordList.Count - size);
+                    result.Add(smallList);
+                    break;
+                }
+                List<string> list = wordList.GetRange(startIndex, size);
+                result.Add(list);
+                startIndex += size;
+            }
+            return result;
         }
 
         private static void Send()
