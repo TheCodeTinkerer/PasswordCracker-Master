@@ -26,14 +26,14 @@ namespace PasswordCrackerCentralized
         /// <summary>
         /// Runs the password cracking algorithm
         /// </summary>
-        public void RunCracking()
+        public List<UserInfoClearText> RunCracking()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             List<UserInfo> userInfos =
                 PasswordFileHandler.ReadPasswordFile("passwords.txt");
             List<UserInfoClearText> result = new List<UserInfoClearText>();
-            using (FileStream fs = new FileStream("webster-dictionary.txt", FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new FileStream(@"C:\Users\Lasse\Desktop\GitHub\PasswordCracker\webster-dictionary.txt", FileMode.Open, FileAccess.Read))
             using (StreamReader dictionary = new StreamReader(fs))
             {
                 while (!dictionary.EndOfStream)
@@ -46,7 +46,9 @@ namespace PasswordCrackerCentralized
             stopwatch.Stop();
             Console.WriteLine(string.Join(", ", result));
             Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            return result;
         }
+
 
         /// <summary>
         /// Generates a lot of variations, encrypts each of the and compares it to all entries in the password file
