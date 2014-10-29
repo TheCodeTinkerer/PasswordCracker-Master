@@ -32,7 +32,7 @@ namespace PasswordCrackerMaster
             _listlist = MakeList(@"c:\temp\webster-dictionary.txt", BlockSize);
             Console.WriteLine(String.Join(", ", _listlist));
 
-            IPAddress adr = IPAddress.Parse("127.0.0.1");
+            IPAddress adr = IPAddress.Parse("10.154.1.141");
             TcpListener server = new TcpListener(adr, Port);
             server.Start();
             while (true)
@@ -132,7 +132,7 @@ namespace PasswordCrackerMaster
             {
                 if (wordList.Count - startIndex < size)
                 {
-                    List<string> smallList = wordList.GetRange(startIndex, wordList.Count - size);
+                    List<string> smallList = wordList.GetRange(wordList.Count - startIndex, size);
                     result.Add(smallList);
                     break;
                 }

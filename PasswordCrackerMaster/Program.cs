@@ -14,7 +14,7 @@ namespace PasswordCrackerMaster
         
         static void Main(string[] args)
         {
-            Master master = new Master(65080, 500);
+            Master master = new Master(8080, 1000);
             master.Run();
         }
 
